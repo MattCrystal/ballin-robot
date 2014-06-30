@@ -458,14 +458,16 @@ static void cpufreq_interactive_timer(unsigned long data)
 		{
 			new_freq = choose_freq(pcpu, loadadjfreq);
 
-			if (new_freq > boosted_freq &&
-					pcpu->target_freq < hispeed_freq)
+			if (new_freq < boosted_freq)
 				new_freq = boosted_freq;
 		}
 	}
 	else
 	{
 		new_freq = choose_freq(pcpu, loadadjfreq);
+		if (new_freq > boosted_freq &&
+					pcpu->target_freq < boosted_freq)
+			new_freq = boosted_freq;
 
 		if (sync_freq && new_freq < sync_freq) {
 
@@ -1482,6 +1484,9 @@ static int __init cpufreq_interactive_init(void)
 	}
 
 	spin_lock_init(&target_loads_lock);
+	spin_lock_init(&min_sample_time_lock);
+	spin_lock_init(&timer_rate_lock);
+	spin_lock_init(&timer_slack_lock);
 	spin_lock_init(&speedchange_cpumask_lock);
 	spin_lock_init(&above_hispeed_delay_lock);
 	mutex_init(&gov_lock);
